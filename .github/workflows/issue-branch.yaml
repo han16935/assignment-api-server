@@ -1,0 +1,60 @@
+name: Create Branch on Issue
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Create branch from issue
+        run: |
+          echo "=== 이슈 브랜치 생성 시작 ==="
+          
+          issue_title="${{ github.event.issue.title }}"
+          issue_number="${{ github.event.issue.number }}"
+          
+          echo "원본 이슈 제목: $issue_title"
+          echo "이슈 번호: $issue_number"
+          
+          # Python 스크립트 실행
+          branch_name=$(python3 .github/scripts/create_branch.py)
+          
+          echo "생성할 브랜치 이름: $branch_name"
+          
+          # 브랜치 이름 유효성 검증
+          if [[ -z "$branch_name" || "$branch_name" == *"_issue/" ]]; then
+            echo "오류: 브랜치명이 비어있습니다. 기본 브랜치명을 사용합니다."
+            branch_name="${issue_number}_issue/untitled-issue"
+          fi
+          
+          echo "최종 브랜치 이름: $branch_name"
+          echo "BRANCH_NAME=$branch_name" >> $GITHUB_ENV
+          
+          # Git 설정
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 원격 URL 설정 (인증 토큰 포함)
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          
+          # 브랜치 생성 및 푸시
+          git checkout -b "$branch_name"
+          git push origin "$branch_name"
+          
+          echo "브랜치 '$branch_name'이(가) 성공적으로 생성되었습니다."
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
