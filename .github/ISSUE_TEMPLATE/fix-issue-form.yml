@@ -1,0 +1,28 @@
+name: '🐛 bug'
+description: '버그 및 오류 이슈 템플릿'
+title : 'Fix/이슈를 작성해주세요'
+labels : [🐛 bug]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### 📝 제목 작성 규칙
+        제목은 반드시 `Fix/ ~` 형식으로 작성해주세요.  
+        예: `Fix/A 기능 중 B 에러`
+
+  - type: input
+    id: description
+    attributes:
+      label: '이슈 내용 (Description)'
+      description: '이슈 대해 간략히 요약해주세요'
+    validations:
+      required: true
+
+  - type : textarea
+    id : details
+    attributes:
+      label : '상세 내용 (Details)'
+      description: '이슈 대해 자세히 설명해주세요'
+      value: |
+        - About Details
